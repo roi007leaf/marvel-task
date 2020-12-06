@@ -7,6 +7,11 @@ class ActorService {
 
   private toolsService = ToolsService;
 
+  /**
+   * return a n array of actors that played more then one character
+   * @param movies
+   * @param actorsToFind
+   */
   public async findActorsThatPlayedMoreThanOneCharacter(
     movies: object,
     actorsToFind: string[]
@@ -23,6 +28,11 @@ class ActorService {
     );
   }
 
+  /**
+   * map actors to their characters
+   * @param movies
+   * @param actors
+   */
   private getCharactersOfActors(
     movies: Movie[],
     actors: string[]
@@ -44,6 +54,11 @@ class ActorService {
     return actorsAndTheirCharacters;
   }
 
+  /**
+   * return a boolean indicating wether theres a role with more the 1 actor playing it
+   * @param movies
+   * @param actorsToFind
+   */
   public async isThereARoleWithMoreThanOneActor(
     movies: object,
     actorsToFind: string[]
@@ -55,7 +70,7 @@ class ActorService {
       actorsToFind,
       moviesAndTheirActors
     );
-    const roleToCharactersMap = this.mapRoleToCharacter(filteredMovies);
+    const roleToCharactersMap = this.mapRoleToActor(filteredMovies);
     const isThereARoleWithMoreThanOneActor = this.checkIfThereIsAnyRoleWithMoreThanOneActorPlayingIt(
       roleToCharactersMap
     );
@@ -68,7 +83,11 @@ class ActorService {
     return Object.values(rolesObject).filter((value) => value.length > 1);
   }
 
-  private mapRoleToCharacter(filteredMovies: Movie[]): RoleCharacters {
+  /**
+   * map chracter to his actor
+   * @param filteredMovies
+   */
+  private mapRoleToActor(filteredMovies: Movie[]): RoleCharacters {
     const rolesMap: RoleCharacters = {};
     filteredMovies.forEach((movie) => {
       movie.cast?.forEach((actor: Cast) => {

@@ -8,6 +8,10 @@ class MovieService {
 
   private host = 'https://api.themoviedb.org/3/movie/';
 
+  /**
+   * get all movie cast and actors by movie id
+   * @param movieId
+   */
   public async getMovieActorsById(movieId: number): Promise<Cast[]> {
     const response = await RequestService.get(
       `${this.host}${movieId}/credits?api_key=${process.env.API_KEY}`
@@ -15,6 +19,11 @@ class MovieService {
     return response.data.cast;
   }
 
+  /**
+   * return mapping of actor to his/her movies
+   * @param movies
+   * @param actorsToFind
+   */
   public async whichMoviesDidEachActorPlayIn(
     movies: object,
     actorsToFind: string[]
@@ -29,6 +38,11 @@ class MovieService {
     return this.mapMovieNamesPerActor(filteredMovies, actorsToFind);
   }
 
+  /**
+   * filter only relevant actors for movie by actors list
+   * @param actorsToFilter
+   * @param movies
+   */
   public filterByActorsList(
     actorsToFilter: string[],
     movies: Movie[]
@@ -41,6 +55,11 @@ class MovieService {
     });
   }
 
+  /**
+   * map movie name to acting actors of it by actors list
+   * @param filteredMovies
+   * @param actors
+   */
   private mapMovieNamesPerActor(
     filteredMovies: Movie[],
     actors: string[]
