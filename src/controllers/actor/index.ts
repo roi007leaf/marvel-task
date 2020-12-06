@@ -1,7 +1,8 @@
 import { Request, Response } from 'express';
 
-import { IActorCharacters } from '../../interfaces';
-import { actorService } from '../../services';
+import { BadRequestError } from '../../errors/bad-request-error';
+import { ActorCharacters } from '../../interfaces';
+import ActorService from '../../services/actor';
 
 const movieTitles = {
   'Fantastic Four (2005)': 9738,
@@ -60,18 +61,26 @@ const actors = [
 
 export class ActorController {
   public async whoPlayedMoreThanOneCharacter(req: Request, res: Response) {
-    const response: IActorCharacters[] = await actorService.findActorsThatPlayedMoreThanOneCharacter(
-      movieTitles,
-      actors
-    );
-    res.send(response);
+    try {
+      const response: ActorCharacters[] = await ActorService.findActorsThatPlayedMoreThanOneCharacter(
+        movieTitles,
+        actors
+      );
+      res.send(response);
+    } catch (error) {
+      throw new BadRequestError(error.message);
+    }
   }
 
   public async isThereARoleWithMoreThanOneActor(req: Request, res: Response) {
-    const response: boolean = await actorService.mapRoleToCharacters(
-      movieTitles,
-      actors
-    );
-    res.status(200).send(response);
+    try {
+      const response: boolean = await ActorService.isThereARoleWithMoreThanOneActor(
+        movieTitles,
+        actors
+      );
+      res.status(200).send(response);
+    } catch (error) {
+      throw new BadRequestError(error.message);
+    }
   }
 }

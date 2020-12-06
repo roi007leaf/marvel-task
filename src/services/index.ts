@@ -1,7 +1,6 @@
 import ActorService from './actor';
 import MovieService from './movie';
+import RequestService from './request';
+import ToolsService from './tools';
 
-const movieService = new MovieService();
-const actorService = new ActorService();
-
-export { movieService, actorService };
+export { ActorService, MovieService, ToolsService, RequestService };

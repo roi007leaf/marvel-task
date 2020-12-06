@@ -6,12 +6,12 @@ const router = express.Router({
   strict: true
 });
 
-router.get('/actor/moreThanOneCharacter', (req: Request, res: Response) => {
+router.get('/actor/more-than-one-character', (req: Request, res: Response) => {
   return actorController.whoPlayedMoreThanOneCharacter(req, res);
 });
 
 router.get(
-  '/actor/rolesWithMoreThanOneActor',
+  '/actor/roles-with-more-than-one-actor',
   (req: Request, res: Response) => {
     return actorController.isThereARoleWithMoreThanOneActor(req, res);
   }

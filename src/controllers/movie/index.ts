@@ -1,7 +1,8 @@
 import { Request, Response } from 'express';
 
-import { IActorMovieMap } from '../../interfaces';
-import { movieService } from '../../services';
+import { BadRequestError } from '../../errors/bad-request-error';
+import { ActorMovieMap } from '../../interfaces';
+import MovieService from '../../services/movie';
 
 const movieTitles = {
   'Fantastic Four (2005)': 9738,
@@ -60,10 +61,14 @@ const actors = [
 
 export class MovieController {
   public async whichMoviesDidEachActorPlayIn(req: Request, res: Response) {
-    const response: IActorMovieMap[] = await movieService.whichMoviesDidEachActorPlayIn(
-      movieTitles,
-      actors
-    );
-    res.send(response);
+    try {
+      const response: ActorMovieMap[] = await MovieService.whichMoviesDidEachActorPlayIn(
+        movieTitles,
+        actors
+      );
+      res.send(response);
+    } catch (error) {
+      throw new BadRequestError(error.message);
+    }
   }
 }

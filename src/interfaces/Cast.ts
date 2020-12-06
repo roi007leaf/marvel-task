@@ -1,4 +1,4 @@
-export default interface ICast {
+export default interface Cast {
   adult: boolean;
   gender: boolean;
   id: number;

@@ -1,48 +1,32 @@
-import { IActorCharacters, ICast, IMovie } from '../../interfaces';
-import IRoleCharacters from '../../interfaces/IRolesCharacters';
+import { ActorCharacters, Cast, Movie, RoleCharacters } from '../../interfaces';
 import MovieService from '../movie';
+import ToolsService from '../tools';
 
-export default class ActorService {
-  private movieService = new MovieService();
+class ActorService {
+  private movieService = MovieService;
 
-  getMoviesForActors(movies: [object], actors: string[]) {
-    const moviesFilteredByActors = this.movieService.whichMoviesDidEachActorPlayIn(
-      movies,
-      actors
-    );
-    return this.findActorsThatPlayedMoreThanOneCharacter(
-      moviesFilteredByActors,
-      actors
-    );
-  }
+  private toolsService = ToolsService;
 
-  async findActorsThatPlayedMoreThanOneCharacter(
+  public async findActorsThatPlayedMoreThanOneCharacter(
     movies: object,
     actorsToFind: string[]
-  ): Promise<IActorCharacters[]> {
-    return Promise.all(
-      await Object.entries(movies).map(async ([key, value]) => {
-        const movieCast: ICast[] = await this.movieService.getMovieActorsById(
-          value
-        );
-        const onlyActors = this.movieService.getActorsFromFullCast(movieCast);
-        return { id: key, cast: onlyActors };
-      })
-    ).then((responses) => {
-      const filteredMovies = this.movieService.filterByActorsList(
-        actorsToFind,
-        responses
-      );
-      return this.getCharactersOfActors(filteredMovies, actorsToFind).filter(
-        (actor) => actor.characters.length > 1
-      );
-    });
+  ): Promise<ActorCharacters[]> {
+    const moviesAndTheirActorsByList = await this.toolsService.getActorsForAllMovies(
+      movies
+    );
+    const filteredMovies = this.movieService.filterByActorsList(
+      actorsToFind,
+      moviesAndTheirActorsByList
+    );
+    return this.getCharactersOfActors(filteredMovies, actorsToFind).filter(
+      (actor) => actor.characters.length > 1
+    );
   }
 
-  getCharactersOfActors(
-    movies: IMovie[],
+  private getCharactersOfActors(
+    movies: Movie[],
     actors: string[]
-  ): IActorCharacters[] {
+  ): ActorCharacters[] {
     const actorsAndTheirCharacters = actors.map((name) => {
       const characters: string[] = [];
       movies.forEach((movie) => {
@@ -60,47 +44,59 @@ export default class ActorService {
     return actorsAndTheirCharacters;
   }
 
-  async mapRoleToCharacters(
+  public async isThereARoleWithMoreThanOneActor(
     movies: object,
     actorsToFind: string[]
   ): Promise<boolean> {
-    const rolesMap: IRoleCharacters = {};
-    return Promise.all(
-      await Object.entries(movies).map(async ([key, value]) => {
-        const movieCast: ICast[] = await this.movieService.getMovieActorsById(
-          value
-        );
-        const onlyActors = this.movieService.getActorsFromFullCast(movieCast);
-        return { id: key, cast: onlyActors };
-      })
-    ).then((responses) => {
-      const filteredMovies = this.movieService.filterByActorsList(
-        actorsToFind,
-        responses
-      );
-      filteredMovies.forEach((movie) => {
-        movie.cast?.forEach((actor: ICast) => {
-          if (!rolesMap[actor.character]) {
-            rolesMap[actor.character] = [];
-          } else if (
-            rolesMap[actor.character].indexOf(actor.original_name) === -1
-          ) {
-            rolesMap[actor.character].push(actor.original_name);
-          }
-        });
-      });
-      return this.checkIfThereIsAnyRoleWithMoreThanOneActorPlayingIt(rolesMap);
-    });
+    const moviesAndTheirActors = await this.toolsService.getActorsForAllMovies(
+      movies
+    );
+    const filteredMovies = this.movieService.filterByActorsList(
+      actorsToFind,
+      moviesAndTheirActors
+    );
+    const roleToCharactersMap = this.mapRoleToCharacter(filteredMovies);
+    const isThereARoleWithMoreThanOneActor = this.checkIfThereIsAnyRoleWithMoreThanOneActorPlayingIt(
+      roleToCharactersMap
+    );
+    return isThereARoleWithMoreThanOneActor.length > 1;
   }
 
-  checkIfThereIsAnyRoleWithMoreThanOneActorPlayingIt(
-    rolesObject: IRoleCharacters
-  ): boolean {
-    for (const key of Object.keys(rolesObject)) {
-      if (rolesObject[key].length > 1) {
-        return true;
-      }
-    }
-    return false;
+  private checkIfThereIsAnyRoleWithMoreThanOneActorPlayingIt(
+    rolesObject: RoleCharacters
+  ): string[][] {
+    return Object.values(rolesObject).filter((value) => value.length > 1);
+  }
+
+  private mapRoleToCharacter(filteredMovies: Movie[]): RoleCharacters {
+    const rolesMap: RoleCharacters = {};
+    filteredMovies.forEach((movie) => {
+      movie.cast?.forEach((actor: Cast) => {
+        const characterName = actor.character
+          .replace('(uncredited)', '')
+          .trim()
+          .replace(/['"]+/g, '')
+          .split('/')[0]
+          .trim();
+        if (
+          !rolesMap[characterName] ||
+          (rolesMap[characterName] &&
+            !this.toolsService.doesStringContainsSubstringFromArray(
+              characterName,
+              rolesMap
+            ))
+        ) {
+          rolesMap[characterName] = [];
+          rolesMap[characterName].push(actor.original_name);
+        } else if (
+          rolesMap[characterName].indexOf(actor.original_name) === -1
+        ) {
+          rolesMap[characterName].push(actor.original_name);
+        }
+      });
+    });
+    return rolesMap;
   }
 }
+
+export default new ActorService();

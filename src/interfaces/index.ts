@@ -1,6 +1,7 @@
-import IActorCharacters from './IActorCharacters';
-import IActorMovieMap from './IActorMovieMap';
-import ICast from './ICast';
-import IMovie from './IMovie';
+import ActorCharacters from './ActorCharacters';
+import ActorMovieMap from './ActorMovieMap';
+import Cast from './Cast';
+import Movie from './Movie';
+import RoleCharacters from './RolesCharacters';
 
-export { ICast, IMovie, IActorMovieMap, IActorCharacters };
+export { Cast, Movie, ActorMovieMap, ActorCharacters, RoleCharacters };
